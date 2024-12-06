@@ -1,7 +1,7 @@
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 class APIrequest{
-  final String baseUrl = 'http://52.242.33.22:3000';
+  final String baseUrl = 'http://localhost:3000';
 
   final Map<String, Map<String, Type>> endpoints = {
  // Endpoint: /game/createGame
