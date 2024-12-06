@@ -1,0 +1,64 @@
+USE [master]
+GO
+
+/****** Object:  StoredProcedure [dbo].[VALIDTILELIST]    Script Date: 12/5/2024 5:01:03 PM ******/
+SET ANSI_NULLS ON
+GO
+
+SET QUOTED_IDENTIFIER ON
+GO
+
+CREATE PROCEDURE [dbo].[VALIDTILELIST] 
+	@origin_x int,
+	@origin_y int,
+	@distance int,
+	@map_id UNIQUEIDENTIFIER
+AS
+DECLARE @direction TABLE (ID INT IDENTITY (1,1) ,X INT, Y INT)
+INSERT INTO @direction VALUES (-1, 0), (1,0), (0,-1), (0, 1)
+
+DECLARE @ROWCOUNT INT = (SELECT MAX(X) FROM DBO.map WHERE MAP_ID = @map_id)
+DECLARE @COLCOUNT INT = (SELECT MAX(Y) FROM DBO.map WHERE MAP_ID = @map_id)
+
+DECLARE @to_check TABLE ( X INT, Y INT, DISTANCE INT)
+DECLARE @visited TABLE ( X INT, Y INT)
+DECLARE @result TABLE ( X INT, Y INT)
+INSERT INTO @visited VALUES (@origin_x, @origin_x)
+
+	WHILE (SELECT COUNT(*) FROM @to_check) > 0
+		BEGIN
+			DECLARE @CURRENT_CELL_X INT = (SELECT TOP 1 X FROM @to_check)
+			DECLARE @CURRENT_CELL_Y INT = (SELECT TOP 1 Y FROM @to_check)
+			DECLARE @DIST INT = (SELECT TOP 1 DISTANCE FROM @to_check)
+			DELETE TOP(1) FROM @to_check
+
+			IF @DIST <= @distance 
+			BEGIN
+				INSERT INTO @result VALUES (@CURRENT_CELL_X, @CURRENT_CELL_Y)
+			END
+			IF @DIST < @distance
+			BEGIN
+				DECLARE @ITERATION INT = 0
+				DECLARE @COUNTER INT = (SELECT COUNT(*) FROM @direction)
+				WHILE @ITERATION < @COUNTER
+				BEGIN
+					DECLARE @NEWX INT
+					DECLARE @NEWY INT 
+					SELECT @NEWX = @CURRENT_CELL_X + X, @NEWY = @CURRENT_CELL_Y + Y
+					FROM @direction 
+					WHERE ID = @ITERATION
+
+
+					IF 0 <= @NEWX AND @NEWX < @ROWCOUNT AND 0 <= @NEWY AND  @NEWY < @COLCOUNT AND NOT EXISTS (SELECT 1 FROM @visited WHERE X = @NEWX AND Y = @NEWY)
+					BEGIN
+						INSERT INTO @visited VALUES (@NEWX, @NEWY)
+						INSERT INTO @to_check VALUES (@NEWX, @NEWY, @DIST + 1)
+					END
+					SET @ITERATION = @ITERATION +1
+				END
+			END
+	SELECT * FROM @result
+END
+GO
+
+

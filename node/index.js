@@ -1,12 +1,9 @@
-// index.js
 require('dotenv').config();
 const express = require('express');
 const { poolPromise, sql } = require('./db');
 
 const app = express();
 app.use(express.json());
-
-// createGame API
 app.post('/game/createGame', async (req, res) => {
   if (
     !req.body.hasOwnProperty('player_max_count') ||
@@ -56,6 +53,7 @@ app.post('/player/generatePlayer', async (req, res) => {
       .input('username', sql.VarChar(25), username)
       .output('output', sql.Int)
       .execute('GeneratePlayer');
+    console.log('Result from GeneratePlayer:', result);
 
     res.status(200).json({ output: result.output.output });
   } catch (error) {
@@ -99,7 +97,6 @@ app.post('/player/login', async (req, res) => {
   }
 })
 
-// AddPlayerToActiveGame API
 app.post('/player/addPlayerToActiveGame', async (req, res) => {
   if (
     !req.body.hasOwnProperty('player_id') ||
@@ -323,7 +320,7 @@ app.post('/game/start', async (req, res) => {
   try {
     const pool = await poolPromise; // Get the database connection pool
 
-    // Execute the `startGame` stored procedure
+    // Execute the startGame stored procedure
     const result = await pool.request()
       .input('session_token', sql.UniqueIdentifier, session_token)
       .execute('startGame');
@@ -364,5 +361,5 @@ app.post('/games/get-all-games', async (req, res) => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
+  console.log('Server is running on port ${PORT}');
 });
