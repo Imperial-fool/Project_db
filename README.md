@@ -5,7 +5,7 @@ it is only a prototype at the moment, as this was completed solo in under 4 week
 The basic stucture of the application is modeled after financial software, I created a backend DB that does all state management for a game
 these stored procs are then used by the middleware to call 'game' functions, which can be interacted with by the flutter frontend
 
-completed features-
+completed features (all implemented in SQL)-
 
     -Map gen
     
